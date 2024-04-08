@@ -225,14 +225,24 @@ def daily_return_cal(prc):
         dtypes: float64(1)
          usage: 48.0 bytes
         ----------------------------------------
-
+        
     Hints
      -----
      - Ensure that the returns do not contain any entries with null values.
 
     """
     # <COMPLETE THIS PART>
+    #shift the rows upward by 1 and fill NaN value at the last row
+    prc_shifted = prc.shift(1)
+    
+    #use original input - the shifted 
+    diff = prc - prc_shifted - 1
 
+    #drop the rows with NaN value, diff[1:] will also do
+    diff = diff.dropna()
+
+    #Again, series does not have .info method and thus return a one column df instead
+    return diff.to_frame()
 
 # ----------------------------------------------------------------------------
 # Part 4.4: Complete the monthly_return_cal function
@@ -478,7 +488,7 @@ def _test_daily_return_cal(made_up_data=True, ser_prc=None):
         prc = ser_prc.copy()
 
     msg = 'This is the test ser `prc`:'
-    util.test_print(prc, msg)
+    util.test_print(prc.to_frame(), msg)
 
     res_daily = daily_return_cal(prc)
     msg = "This means `res_daily = daily_return_cal(prc)`, print out res_daily:"
@@ -528,7 +538,7 @@ if __name__ == "__main__":
     _test_read_prc_csv()
 
     # # use made-up series to test daily_return_cal function
-    # _test_daily_return_cal()
+    _test_daily_return_cal()
     # # use AAPL prc series to test daily_return_cal function
     # ser_price = read_prc_csv(tic='AAPL', start='2020-09-03', end='2020-09-09')
     # _test_daily_return_cal(made_up_data=False, ser_prc=ser_price)
