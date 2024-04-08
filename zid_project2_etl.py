@@ -122,9 +122,10 @@ def read_prc_csv(tic, start, end, prc_col='Adj Close'):
         print(f"{end} is not a valid date.")
         exit()
 
-    #read the dataframe and set Date column to be pd.Timestamp type
+    #read the dataframe and set Date column to be pd.Timestamp type and sort to be sure
     tic_prc_df = pd.read_csv(tic_prc_file)
     tic_prc_df['Date'] = pd.to_datetime(tic_prc_df['Date'])
+    tic_prc_df = tic_prc_df.sort_values(by='Date')
 
     #get all the rows between start and end
     filtered_df = tic_prc_df[(tic_prc_df['Date'] >= start) & (tic_prc_df['Date'] <= end)]
