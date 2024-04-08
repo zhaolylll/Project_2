@@ -142,6 +142,7 @@ def read_prc_csv(tic, start, end, prc_col='Adj Close'):
 
     #assert the result series has no null value
     assert not result.isnull().any(), f"There is null value in the returned series"
+    
     return result
 
 # ----------------------------------------------------------------------------
@@ -239,7 +240,6 @@ def daily_return_cal(prc):
     #drop the rows with NaN value, diff[1:] will also do
     diff = diff.dropna()
 
-    #Again, series does not have .info method
     return diff
 
 # ----------------------------------------------------------------------------
@@ -372,7 +372,6 @@ def monthly_return_cal(prc):
     diff = diff[diff.index.isin(months_with_more_than_18_entries)]
     diff = diff.to_period(freq='M')
     
-    #Again, series does not have .info method
     return diff
 
 
