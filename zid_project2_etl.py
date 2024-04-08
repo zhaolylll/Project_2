@@ -142,7 +142,6 @@ def read_prc_csv(tic, start, end, prc_col='Adj Close'):
 
     #assert the result series has no null value
     assert not result.isnull().any(), f"There is null value in the returned series"
-    
     return result
 
 # ----------------------------------------------------------------------------
@@ -537,9 +536,6 @@ def _test_read_prc_csv():
     """
     tic = 'AAPL'
     ser = read_prc_csv(tic, '2010-01-04', '2010-12-31')
-
-    #lyZhao: line 48 in util.py is trying to call .info on Series, which is not applicable, thus change to a single column df for testing fuction
-    ser = ser.to_frame()
     util.test_print(ser)
 
 
@@ -558,14 +554,10 @@ def _test_daily_return_cal(made_up_data=True, ser_prc=None):
         prc = ser_prc.copy()
 
     msg = 'This is the test ser `prc`:'
-    #lyZhao: line 48 in util.py is trying to call .info on Series, which is not applicable, thus change to a single column df for testing fuction
-    prc = prc.to_frame()
     util.test_print(prc, msg)
 
     res_daily = daily_return_cal(prc)
     msg = "This means `res_daily = daily_return_cal(prc)`, print out res_daily:"
-    #lyZhao: line 48 in util.py is trying to call .info on Series, which is not applicable, thus change to a single column df for testing fuction
-    #res_daily = res_daily.to_frame()
     util.test_print(res_daily, msg)
 
 
@@ -586,8 +578,6 @@ def _test_monthly_return_cal(made_up_data=True, ser_prc=None):
     else:
         prc = ser_prc.copy()
 
-    #lyZhao: line 48 in util.py is trying to call .info on Series, which is not applicable, thus change to a single column df for testing fuction
-    prc = prc.to_frame()
     msg = 'This is the test ser `prc`:'
     util.test_print(prc, msg)
 
