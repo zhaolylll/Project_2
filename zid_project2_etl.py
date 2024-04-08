@@ -488,6 +488,43 @@ def aj_ret_dict(tickers, start, end):
         ----------------------------------------
     """
     # <COMPLETE THIS PART>
+    result = {
+        'Daily': None,
+        'Monthly' : None
+    }
+
+    for tic in tickers:
+        prc = read_prc_csv(tic, start, end)
+
+        ################### Daily ######################################
+        #get daily_df by converting series to frame
+        daily_df = daily_return_cal(prc).to_frame()
+        
+        #set names for index and that one column
+        daily_df.index.name = 'Date'
+        daily_df.columns = [tic.lower()]
+        
+        #assign or merge to result['Daily']
+        if result['Daily'] is None:
+            result['Daily'] = daily_df
+        else:
+            result['Daily'] = pd.merge(result['Daily'], daily_df, left_index=True, right_index=True, how='outer') #left_index/right_index tells pd to merge on index
+
+        ################### Monthly ######################################
+        #get monthly_df by converting series to frame
+        monthly_df = monthly_return_cal(prc).to_frame()
+        
+        #set names for index and that one column
+        monthly_df.index.name = 'Year_Month'
+        monthly_df.columns = [tic.lower()]
+        
+        #assign or merge to result['Monthly']
+        if result['Monthly'] is None:
+            result['Monthly'] = monthly_df
+        else:
+            result['Monthly'] = pd.merge(result['Monthly'], monthly_df, left_index=True, right_index=True, how='outer') #left_index/right_index tells pd to merge on index
+
+    return result
 
 
 # ----------------------------------------------------------------------------
@@ -588,5 +625,5 @@ if __name__ == "__main__":
     ser_price = read_prc_csv(tic='AAPL', start='2020-08-31', end='2021-01-10')
     _test_monthly_return_cal(made_up_data=False, ser_prc=ser_price)
     # # test aj_ret_dict function
-    # _test_aj_ret_dict(['AAPL', 'TSLA'], start='2010-06-25', end='2010-08-05')
+    _test_aj_ret_dict(['AAPL', 'TSLA'], start='2010-06-25', end='2010-08-05')
 
