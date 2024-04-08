@@ -10,8 +10,10 @@
 #       For details, review the import statements in zid_project2_main.py
 
 # <COMPLETE THIS PART>
-
-
+import pandas as pd
+import config as cfg
+import util
+import os
 
 # ----------------------------------------------------------------------------
 # Part 4.2: Complete the read_prc_csv function
@@ -100,6 +102,48 @@ def read_prc_csv(tic, start, end, prc_col='Adj Close'):
 
     # <COMPLETE THIS PART>
 
+    #convert input tic to lower case
+    tic = tic.lower()
+    #check the `<tic>`_prc.csv exists in cfg.DATADIR
+    tic_prc_file = os.path.join(cfg.DATADIR, f"{tic}_prc.csv")
+    assert os.path.isfile(tic_prc_file), f"{tic}_prc.csv does not exist in data/."
+
+    #check start/end date
+    try:
+        # Attempt to convert the string to a Timestamp
+        start = pd.to_datetime(start, format='%Y-%m-%d')
+    except ValueError:
+        print(f"{start} is not a valid date.")
+        exit()
+    try:
+        # Attempt to convert the string to a Timestamp
+        end = pd.to_datetime(end, format='%Y-%m-%d')
+    except ValueError:
+        print(f"{end} is not a valid date.")
+        exit()
+
+    #read the dataframe and set Date column to be pd.Timestamp type
+    tic_prc_df = pd.read_csv(tic_prc_file)
+    tic_prc_df['Date'] = pd.to_datetime(tic_prc_df['Date'])
+
+    #get all the rows between start and end
+    filtered_df = tic_prc_df[(tic_prc_df['Date'] >= start) & (tic_prc_df['Date'] <= end)]
+    
+    # Set the 'Date' column as the index
+    filtered_df.set_index('Date', inplace=True)
+
+    #take the prc_col out
+    try:
+        result = filtered_df[prc_col]
+    except Exception:
+        print(f"{prc_col} does not exists in {tic_prc_file}.")
+        exit()
+
+    #assert the result series has no null value
+    assert not result.isnull().any(), f"There is null value in the returned series"
+    
+    #line 48 in util.py is trying to call .info on Series, which is not applicable, thus return a (N,1) df instead
+    return result.to_frame()
 
 # ----------------------------------------------------------------------------
 # Part 4.3: Complete the daily_return_cal function
@@ -480,7 +524,7 @@ def _test_aj_ret_dict(tickers, start, end):
 if __name__ == "__main__":
     pass
     # #test read_prc_csv function
-    # _test_read_prc_csv()
+    _test_read_prc_csv()
 
     # # use made-up series to test daily_return_cal function
     # _test_daily_return_cal()
