@@ -13,7 +13,8 @@
 #   - ......
 # Hint: you can utilize modules covered in our lectures, listed above and any others.
 # ----------------------------------------------------------------------------
-
+import config as cfg
+import util
 
 # ----------------------------------------------------------------------------
 # Part 2: import modules inside the project2 package
