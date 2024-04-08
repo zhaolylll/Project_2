@@ -143,8 +143,7 @@ def read_prc_csv(tic, start, end, prc_col='Adj Close'):
     #assert the result series has no null value
     assert not result.isnull().any(), f"There is null value in the returned series"
     
-    #line 48 in util.py is trying to call .info on Series, which is not applicable, thus return a (N,1) df instead
-    return result.to_frame()
+    return result
 
 # ----------------------------------------------------------------------------
 # Part 4.3: Complete the daily_return_cal function
@@ -236,13 +235,13 @@ def daily_return_cal(prc):
     prc_shifted = prc.shift(1)
     
     #use original input - the shifted 
-    diff = prc - prc_shifted - 1
+    diff = prc/prc_shifted - 1
 
     #drop the rows with NaN value, diff[1:] will also do
     diff = diff.dropna()
 
-    #Again, series does not have .info method and thus return a one column df instead
-    return diff.to_frame()
+    #Again, series does not have .info method
+    return diff
 
 # ----------------------------------------------------------------------------
 # Part 4.4: Complete the monthly_return_cal function
@@ -345,6 +344,37 @@ def monthly_return_cal(prc):
 
     """
     # <COMPLETE THIS PART>
+
+    ####################### This part let us know which month we will exclude ############################################
+    # Group by year and month, then filter groups with more than 18 entries
+    filtered_prc = prc.groupby([prc.index.year, prc.index.month]).filter(lambda x: len(x) >= 18)
+    
+    #get the months that should be printed out
+    filtered_prc_reassampled = filtered_prc.resample('M').last() 
+    months_with_more_than_18_entries = filtered_prc_reassampled.index #if only Sep is to be shown, out put will be one row with 2020-09-30 as index, use this to filter later
+
+
+    
+
+    ####################### This part do monthly calculations for all months regarless if >= 18 entries presented for this month ############################################
+    # Resample the series to monthly frequency, and take the last day's row
+    prc_reasampled = prc.resample('M').last()
+
+    #shift the rows upward by 1 and fill NaN value at the last row
+    prc_reasampled_shifted = prc_reasampled.shift(1)
+    
+    #use original input - the shifted 
+    diff = prc_reasampled/prc_reasampled_shifted - 1
+
+    #drop the rows with NaN value, diff[1:] will also do
+    diff = diff.dropna()
+
+    ################################ filter based on index from the first part and convert the datetime index to a PeriodIndex (monthly frequency) ########################
+    diff = diff[diff.index.isin(months_with_more_than_18_entries)]
+    diff = diff.to_period(freq='M')
+    
+    #Again, series does not have .info method
+    return diff
 
 
 # ----------------------------------------------------------------------------
@@ -470,6 +500,9 @@ def _test_read_prc_csv():
     """
     tic = 'AAPL'
     ser = read_prc_csv(tic, '2010-01-04', '2010-12-31')
+
+    #lyZhao: line 48 in util.py is trying to call .info on Series, which is not applicable, thus change to a single column df for testing fuction
+    ser = ser.to_frame()
     util.test_print(ser)
 
 
@@ -488,10 +521,14 @@ def _test_daily_return_cal(made_up_data=True, ser_prc=None):
         prc = ser_prc.copy()
 
     msg = 'This is the test ser `prc`:'
-    util.test_print(prc.to_frame(), msg)
+    #lyZhao: line 48 in util.py is trying to call .info on Series, which is not applicable, thus change to a single column df for testing fuction
+    prc = prc.to_frame()
+    util.test_print(prc, msg)
 
     res_daily = daily_return_cal(prc)
     msg = "This means `res_daily = daily_return_cal(prc)`, print out res_daily:"
+    #lyZhao: line 48 in util.py is trying to call .info on Series, which is not applicable, thus change to a single column df for testing fuction
+    #res_daily = res_daily.to_frame()
     util.test_print(res_daily, msg)
 
 
@@ -512,6 +549,8 @@ def _test_monthly_return_cal(made_up_data=True, ser_prc=None):
     else:
         prc = ser_prc.copy()
 
+    #lyZhao: line 48 in util.py is trying to call .info on Series, which is not applicable, thus change to a single column df for testing fuction
+    prc = prc.to_frame()
     msg = 'This is the test ser `prc`:'
     util.test_print(prc, msg)
 
@@ -540,14 +579,14 @@ if __name__ == "__main__":
     # # use made-up series to test daily_return_cal function
     _test_daily_return_cal()
     # # use AAPL prc series to test daily_return_cal function
-    # ser_price = read_prc_csv(tic='AAPL', start='2020-09-03', end='2020-09-09')
-    # _test_daily_return_cal(made_up_data=False, ser_prc=ser_price)
+    ser_price = read_prc_csv(tic='AAPL', start='2020-09-03', end='2020-09-09')
+    _test_daily_return_cal(made_up_data=False, ser_prc=ser_price)
     #
     # # use made-up series to test daily_return_cal function
-    # _test_monthly_return_cal()
+    _test_monthly_return_cal()
     # # use AAPL prc series to test daily_return_cal function
-    # ser_price = read_prc_csv(tic='AAPL', start='2020-08-31', end='2021-01-10')
-    # _test_monthly_return_cal(made_up_data=False, ser_prc=ser_price)
+    ser_price = read_prc_csv(tic='AAPL', start='2020-08-31', end='2021-01-10')
+    _test_monthly_return_cal(made_up_data=False, ser_prc=ser_price)
     # # test aj_ret_dict function
     # _test_aj_ret_dict(['AAPL', 'TSLA'], start='2010-06-25', end='2010-08-05')
 
