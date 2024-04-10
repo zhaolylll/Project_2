@@ -10,6 +10,14 @@
 #       For details, review the import statements in zid_project2_main.py
 
 # <COMPLETE THIS PART>
+import zid_project2_etl as etl
+
+import config as cfg
+import util
+import pandas as pd
+import numpy as np
+import sys
+import os
 
 
 # ----------------------------------------------------------------------------------------
@@ -148,6 +156,26 @@ def vol_cal(ret, cha_name, ret_freq_use: list):
 
     # <COMPLETE THIS PART>
 
+    # Ensure only the selected frequency is used for calculations
+    if 'Daily' in ret_freq_use:
+        df = ret['Daily'].copy()
+    else:
+        raise ValueError("Invalid frequency specified in ret_freq_use.")
+
+    # Convert daily returns to monthly, calculating volatility
+    monthly_vol = df.resample('M').std()
+
+    # Ensure the monthly_vol index is PeriodIndex with the correct frequency
+    monthly_vol.index = monthly_vol.index.to_period('M')
+
+    # Rename columns to include the characteristic name
+    monthly_vol.columns = [f"{col}_{cha_name}" for col in monthly_vol.columns]
+
+    # Drop rows where all values are NaN
+    monthly_vol = monthly_vol.dropna()
+
+    return monthly_vol
+
 
 # ----------------------------------------------------------------------------
 # Part 5.5: Complete the merge_tables function
@@ -220,6 +248,19 @@ def merge_tables(ret, df_cha, cha_name):
      - Read shift() documentations to understand how to shift the values of a DataFrame along a specified axis
     """
     # <COMPLETE THIS PART>
+    # Extract monthly returns DataFrame and make a copy
+    monthly_returns = ret['Monthly'].copy()
+
+    # Shift the characteristic DataFrame 1 month forward
+    df_cha_shifted = df_cha.shift(1)
+
+    # Merge the two DataFrames
+    merged_df = pd.merge(monthly_returns, df_cha_shifted, left_index=True, right_index=True, how='left')
+
+    # Ensure index name is correct
+    merged_df.index.name = 'Year_Month'
+
+    return merged_df
 
 
 # ------------------------------------------------------------------------------------
@@ -270,6 +311,19 @@ def cha_main(ret, cha_name, ret_freq_use: list):
         in the module with appropriate logic to handle the inputs and outputs as described.
     """
     # <COMPLETE THIS PART>
+    """
+    The main function for characteristic calculation and merging it with monthly returns.
+    """
+    # Step 1: Sanity check on inputs
+    vol_input_sanity_check(ret, cha_name, ret_freq_use)
+
+    # Step 2: Calculate stock characteristics (volatility in this case)
+    df_cha = vol_cal(ret, cha_name, ret_freq_use)
+
+    # Step 3: Merge the calculated characteristics with monthly returns
+    merged_df = merge_tables(ret, df_cha, cha_name)
+
+    return merged_df
 
 
 def _test_ret_dict_gen():
@@ -286,19 +340,19 @@ def _test_ret_dict_gen():
     ])
 
     stock1 = [
-         0.023969,  0.005083, -0.021728, -0.036492,  0.002642,
-         0.013220, 0.014490, -0.045329, 0.024182, 0.009146,
-         -0.020552,  0.029547,  0.011807, -0.036482,  0.010892,
-         -0.021478, -0.041856,  0.031371,  0.031062, -0.023821,
-         0.023912,  0.018807,  0.036614,  0.028173, -0.039111,
+        0.023969, 0.005083, -0.021728, -0.036492, 0.002642,
+        0.013220, 0.014490, -0.045329, 0.024182, 0.009146,
+        -0.020552, 0.029547, 0.011807, -0.036482, 0.010892,
+        -0.021478, -0.041856, 0.031371, 0.031062, -0.023821,
+        0.023912, 0.018807, 0.036614, 0.028173, -0.039111,
     ]
 
     stock2 = [
-          np.nan, np.nan, np.nan, np.nan, np.nan,
-          np.nan, np.nan, np.nan, np.nan, np.nan,
-          0.017068, -0.000414, -0.036619, -0.025764,  0.019535,
-          0.019739,  0.037371, -0.011854, -0.017300, -0.023779,
-          -0.036719, -0.043338, -0.04288, -0.009428,  0.010881,
+        np.nan, np.nan, np.nan, np.nan, np.nan,
+        np.nan, np.nan, np.nan, np.nan, np.nan,
+        0.017068, -0.000414, -0.036619, -0.025764, 0.019535,
+        0.019739, 0.037371, -0.011854, -0.017300, -0.023779,
+        -0.036719, -0.043338, -0.04288, -0.009428, 0.010881,
     ]
 
     daily_ret_df = pd.DataFrame({'stock1': stock1, 'stock2': stock2, }, index=idx)
@@ -315,13 +369,13 @@ def _test_ret_dict_gen():
     return ret
 
 
-def _test_vol_input_sanity_check(ret, cha_name,  ret_freq_use):
+def _test_vol_input_sanity_check(ret, cha_name, ret_freq_use):
     """ Test function for `vol_input_sanity_check`
     """
-    vol_input_sanity_check(ret, cha_name,  ret_freq_use)
+    vol_input_sanity_check(ret, cha_name, ret_freq_use)
 
 
-def _test_vol_cal(ret, cha_name,  ret_freq_use):
+def _test_vol_cal(ret, cha_name, ret_freq_use):
     """ Test function for `vol_cal`
     Examples:
     Note: The examples below are for illustration purposes.
@@ -406,16 +460,15 @@ if __name__ == "__main__":
     pass
 
     # use made-up return dictionary, _test_ret_dic_gen, to test functions:
-    # made_up_ret_dict = _test_ret_dict_gen()
-    # _test_vol_input_sanity_check(made_up_ret_dict, 'vol', ['Daily',])
-    # _test_vol_cal(made_up_ret_dict, 'vol', ['Daily',])
-    # _test_merge_tables(made_up_ret_dict, 'vol', ['Daily',])
-    # _test_cha_main(made_up_ret_dict, 'vol', ['Daily',])
+    made_up_ret_dict = _test_ret_dict_gen()
+    _test_vol_input_sanity_check(made_up_ret_dict, 'vol', ['Daily',])
+    _test_vol_cal(made_up_ret_dict, 'vol', ['Daily',])
+    _test_merge_tables(made_up_ret_dict, 'vol', ['Daily',])
+    _test_cha_main(made_up_ret_dict, 'vol', ['Daily',])
 
     # use test return dictionary generated by _test_aj_ret_dict to test functions:
-    # ret_dict = etl._test_aj_ret_dict(tickers=['AAPL', 'TSLA'], start='2010-05-15', end='2010-08-31')
-    # _test_vol_input_sanity_check(ret_dict, 'vol', ['Daily',])
-    # _test_vol_cal(ret_dict, 'vol', ['Daily',])
-    # _test_merge_tables(ret_dict, 'vol', ['Daily',])
-    # _test_cha_main(ret_dict, 'vol', ['Daily',])
-
+    ret_dict = etl._test_aj_ret_dict(tickers=['AAPL', 'TSLA'], start='2010-05-15', end='2010-08-31')
+    _test_vol_input_sanity_check(ret_dict, 'vol', ['Daily',])
+    _test_vol_cal(ret_dict, 'vol', ['Daily',])
+    _test_merge_tables(ret_dict, 'vol', ['Daily',])
+    _test_cha_main(ret_dict, 'vol', ['Daily',])
