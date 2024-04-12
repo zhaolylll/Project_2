@@ -559,13 +559,13 @@ if __name__ == "__main__":
     pass
 
     # # use made-up characteristic dataframe, _test_ret_dic_gen, to test functions:
-    # made_up_df_cha = _test_df_cha_gen()
-    # _test_pf_input_sanity_check(made_up_df_cha, 'cha_name')
+    made_up_df_cha = _test_df_cha_gen()
+    _test_pf_input_sanity_check(made_up_df_cha, 'cha_name')
     #
-    # _test_df_reshape(made_up_df_cha, 'cha_name')
-    # _test_stock_sorting(made_up_df_cha, 'cha_name', 2)
-    # _test_pf_cal(made_up_df_cha, 'cha_name', 2,)
-    # _test_pf_main(made_up_df_cha, 'cha_name', 2)
+    _test_df_reshape(made_up_df_cha, 'cha_name')
+    _test_stock_sorting(made_up_df_cha, 'cha_name', 2)
+    _test_pf_cal(made_up_df_cha, 'cha_name', 2,)
+    _test_pf_main(made_up_df_cha, 'cha_name', 2)
 
     # # use test return dict and cha df to test functions:
     # ret_dict = etl.aj_ret_dict(tickers=['AAPL', 'TSLA', 'aal', 'abbv', 'bac'],

@@ -168,7 +168,9 @@ def get_avg(df: pd.DataFrame, year):
         dtype: float64
 
     """
-    # <COMPLETE THIS PART>
+    avg_values = df.loc[df.index.year == year].mean()
+
+    return avg_values
 
 
 def get_cumulative_ret(df):
@@ -196,7 +198,10 @@ def get_cumulative_ret(df):
         where r1, ..., rN represents monthly returns
 
     """
-    # <COMPLETE THIS PART>
+    cum_ret = (1 + df).prod() - 1
+    cum_ret_df = pd.DataFrame(cum_ret, columns=['Cum_Return'])
+
+    return cum_ret_df
 
 
 # ----------------------------------------------------------------------------
@@ -408,6 +413,7 @@ def _test_get_avg():
         f"The value of `res` is {res}",
     ]
     util.test_print('\n'.join(to_print))
+# _test_get_avg()
 
 
 def _test_get_cumulative_ret():
@@ -442,7 +448,7 @@ def _test_get_cumulative_ret():
         f"The value of `res` is {res}",
     ]
     util.test_print('\n'.join(to_print))
-
+# _test_get_cumulative_ret()
 
 if __name__ == "__main__":
     pass
