@@ -156,26 +156,20 @@ def vol_cal(ret, cha_name, ret_freq_use: list):
 
     # <COMPLETE THIS PART>
 
-    # Ensure only the selected frequency is used for calculations
+def vol_cal(ret, cha_name, ret_freq_use: list):
+    # Extract the daily returns for the specified frequency
     if 'Daily' in ret_freq_use:
-        df = ret['Daily'].copy()
-    else:
-        raise ValueError("Invalid frequency specified in ret_freq_use.")
+        daily_returns = ret['Daily'].copy()
 
-    # Convert daily returns to monthly, calculating volatility
-    monthly_vol = df.resample('M').std()
-
-    # Ensure the monthly_vol index is PeriodIndex with the correct frequency
-    monthly_vol.index = monthly_vol.index.to_period('M')
-
-    # Rename columns to include the characteristic name
-    monthly_vol.columns = [f"{col}_{cha_name}" for col in monthly_vol.columns]
+    # Calculate monthly volatility
+    # Add the suffix to each column name
+    vol_df = daily_returns.groupby(daily_returns.index.to_period('M')).apply(lambda x: x.std() if len(x) >= 18 else None)
+    vol_df.columns = [f"{col}_{cha_name}" for col in vol_df.columns]
 
     # Drop rows where all values are NaN
-    monthly_vol = monthly_vol.dropna()
+    vol_df.dropna(how='all', inplace=True)
 
-    return monthly_vol
-
+    return vol_df
 
 # ----------------------------------------------------------------------------
 # Part 5.5: Complete the merge_tables function
@@ -248,17 +242,16 @@ def merge_tables(ret, df_cha, cha_name):
      - Read shift() documentations to understand how to shift the values of a DataFrame along a specified axis
     """
     # <COMPLETE THIS PART>
-    # Extract monthly returns DataFrame and make a copy
+    def merge_tables(ret, df_cha, cha_name):
+    # Extract the monthly returns DataFrame
     monthly_returns = ret['Monthly'].copy()
 
-    # Shift the characteristic DataFrame 1 month forward
-    df_cha_shifted = df_cha.shift(1)
+    # Merge with characteristics DataFrame
+    merged_df = monthly_returns.merge(df_cha, left_index=True, right_index=True, how='left')
 
-    # Merge the two DataFrames
-    merged_df = pd.merge(monthly_returns, df_cha_shifted, left_index=True, right_index=True, how='left')
-
-    # Ensure index name is correct
-    merged_df.index.name = 'Year_Month'
+    # Shift the characteristics columns one month forward
+    for col in df_cha.columns:
+        merged_df[col] = merged_df[col].shift(1)
 
     return merged_df
 
