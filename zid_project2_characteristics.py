@@ -157,19 +157,26 @@ def vol_cal(ret, cha_name, ret_freq_use: list):
     # <COMPLETE THIS PART>
 
 def vol_cal(ret, cha_name, ret_freq_use: list):
-    # Extract the daily returns for the specified frequency
-    if 'Daily' in ret_freq_use:
-        daily_returns = ret['Daily'].copy()
+    if cha_name != 'vol' or 'Daily' not in ret_freq_use:
+        raise ValueError("Invalid characteristic name or frequency use list.")
 
-    # Calculate monthly volatility
-    # Add the suffix to each column name
-    vol_df = daily_returns.groupby(daily_returns.index.to_period('M')).apply(lambda x: x.std() if len(x) >= 18 else None)
-    vol_df.columns = [f"{col}_{cha_name}" for col in vol_df.columns]
+    # Calculate the monthly total volatility for each stock
+    # Note: The daily returns DataFrame is used for this calculation
+    df_daily_returns = ret['Daily'].copy()
+    df_volatility = df_daily_returns.groupby(df_daily_returns.index.to_period('M')).apply(lambda x: x.std(ddof=0))
 
-    # Drop rows where all values are NaN
-    vol_df.dropna(how='all', inplace=True)
+    # Set the index name and column names
+    df_volatility.index.name = 'Year_Month'
+    df_volatility.columns = [f"{col}_{cha_name}" for col in df_volatility.columns]
 
-    return vol_df
+    # Drop months with less than 18 trading days
+    df_volatility = df_volatility[df_daily_returns.groupby(df_daily_returns.index.to_period('M')).count() >= 18]
+
+    # Drop rows with all NaN values
+    df_volatility.dropna(how='all', inplace=True)
+
+    return df_volatility
+
 
 # ----------------------------------------------------------------------------
 # Part 5.5: Complete the merge_tables function
@@ -242,19 +249,17 @@ def merge_tables(ret, df_cha, cha_name):
      - Read shift() documentations to understand how to shift the values of a DataFrame along a specified axis
     """
     # <COMPLETE THIS PART>
-    def merge_tables(ret, df_cha, cha_name):
-    # Extract the monthly returns DataFrame
-    monthly_returns = ret['Monthly'].copy()
+   def merge_tables(ret, df_cha, cha_name):
+    # Get the monthly returns DataFrame
+    df_monthly_returns = ret['Monthly'].copy()
 
-    # Merge with characteristics DataFrame
-    merged_df = monthly_returns.merge(df_cha, left_index=True, right_index=True, how='left')
+    # Merge the monthly returns with the characteristics DataFrame
+    df_merged = pd.merge(df_monthly_returns, df_cha.shift(1), left_index=True, right_index=True, how='left')
 
-    # Shift the characteristics columns one month forward
-    for col in df_cha.columns:
-        merged_df[col] = merged_df[col].shift(1)
+    # Drop rows with all NaN values
+    df_merged.dropna(how='all', inplace=True)
 
-    return merged_df
-
+    return df_merged
 
 # ------------------------------------------------------------------------------------
 # Part 5.2: Read the cha_main function and understand the workflow in this script
@@ -304,19 +309,17 @@ def cha_main(ret, cha_name, ret_freq_use: list):
         in the module with appropriate logic to handle the inputs and outputs as described.
     """
     # <COMPLETE THIS PART>
-    """
-    The main function for characteristic calculation and merging it with monthly returns.
-    """
-    # Step 1: Sanity check on inputs
+  def cha_main(ret, cha_name, ret_freq_use: list):
+    # Step 1: Sanity check
     vol_input_sanity_check(ret, cha_name, ret_freq_use)
 
-    # Step 2: Calculate stock characteristics (volatility in this case)
+    # Step 2: Calculate characteristics
     df_cha = vol_cal(ret, cha_name, ret_freq_use)
 
-    # Step 3: Merge the calculated characteristics with monthly returns
-    merged_df = merge_tables(ret, df_cha, cha_name)
+    # Step 3: Merge tables
+    df_merged = merge_tables(ret, df_cha, cha_name)
 
-    return merged_df
+    return df_merged
 
 
 def _test_ret_dict_gen():
