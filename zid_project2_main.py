@@ -411,7 +411,40 @@ n_obs = df_t_stat['ls_t']
 # .......
 #
 # Please replace the """?""" with your team's project 2 git log:
-git_log = """?"""
+git_log = """
+765cb23	Taolue Chen	Tue Apr 16 03:23:11 2024 +1000	Cleaned up some comments
+5371ffb	Taolue Chen	Tue Apr 16 03:03:13 2024 +1000	Merge remote-tracking branch 'origin/master'
+8bca9ab	Taolue Chen	Tue Apr 16 03:02:57 2024 +1000	4.16 Taolue
+60a56c6	yichen wang	Tue Apr 16 02:52:05 2024 +1000	step8,9
+b93416b	Taolue Chen	Tue Apr 16 02:20:11 2024 +1000	4.16 Taolue
+49ec57c	Taolue Chen	Tue Apr 16 02:19:19 2024 +1000	4.16 Taolue
+afc00ef	Taolue Chen	Tue Apr 16 00:50:59 2024 +1000	4.16 Taolue
+2e82567	yichen wang	Mon Apr 15 19:04:24 2024 +1000	step8,9
+b0faf70	yichen wang	Mon Apr 15 18:44:23 2024 +1000	step8,9
+5a431a4	Yining Liu	Mon Apr 15 16:37:33 2024 +1000	Add files via upload
+5b8f917	Yining Liu	Mon Apr 15 16:35:54 2024 +1000	Delete zid_project2_characteristics.py
+435583d	Yining Liu	Mon Apr 15 16:25:45 2024 +1000	Update zid_project2_characteristics.py
+34df6ef	Yining Liu	Mon Apr 15 03:17:35 2024 +1000	Update zid_project2_characteristics.py
+e40399f	Yining Liu	Mon Apr 15 02:42:21 2024 +1000	Update zid_project2_characteristics.py
+0750f33	Taolue Chen	Sun Apr 14 00:58:46 2024 +1000	4.14 Taolue
+7174d46	Taolue Chen	Sun Apr 14 00:56:52 2024 +1000	4.14 Taolue
+9b323ae	Taolue Chen	Fri Apr 12 14:33:26 2024 +1000	Merge remote-tracking branch 'origin/master'
+4cb71f6	Xiaohan Dong	Fri Apr 12 00:25:15 2024 +1000	step 6 & 7
+3579fe4	Taolue Chen	Wed Apr 10 11:20:56 2024 +1000	Merge remote-tracking branch 'origin/master'
+20073cc	Yining Liu	Tue Apr 9 23:07:34 2024 +1000	Add files via upload
+ca0322d	Yining Liu	Tue Apr 9 23:07:00 2024 +1000	Add files via upload
+b6b9d8f	Yining Liu	Tue Apr 9 23:06:25 2024 +1000	Delete zid_project2_characteristics.py
+8844eef	z5508569LiyiZhao	Tue Apr 9 09:21:31 2024 +1000	Cleaned up some comments
+4b5f807	z5508569LiyiZhao	Tue Apr 9 09:21:31 2024 +1000	Cleaned up some comments
+61c68d9	z5508569LiyiZhao	Mon Apr 8 22:34:30 2024 +1000	Series.info() is legal after pandas 1,5.1, thus no more problem about testing function, deleted added lines in testing function in zid_project_2_etl.py
+34d16f5	z5508569LiyiZhao	Mon Apr 8 22:08:57 2024 +1000	Completed Part 4.5: Complete the aj_ret_dict function
+f056ecf	z5508569LiyiZhao	Mon Apr 8 21:44:03 2024 +1000	Completed Part 4.4: Complete the monthly_return_cal function
+dba4d22	z5508569LiyiZhao	Mon Apr 8 16:43:14 2024 +1000	Part 4.3: Complete the daily_return_cal function, Series does not have .info() method right?
+120fb07	z5508569LiyiZhao	Mon Apr 8 16:17:51 2024 +1000	added sort based on Column Date on Part 4.2: Complete the read_prc_csv function
+a59e47c	z5508569LiyiZhao	Mon Apr 8 15:59:14 2024 +1000	Part 4.2: Complete the read_prc_csv function
+f02fed2	z5508569LiyiZhao	Mon Apr 8 11:28:16 2024 +1000	config.py and util.py imported in zid_project2_main.py,Part 2 done
+f8a7e37	z5508569LiyiZhao	Mon Apr 8 10:43:22 2024 +1000	Initial commit, no code has written yet
+"""
 
 # ----------------------------------------------------------------------------
 # Part 11: project 2 mini-presentation
