@@ -318,7 +318,6 @@ Q8_ANSWER = '62, 4'
 #     Use the output dataframe, EW_LS_pf_d, and auxiliary function in this script
 #     to do the calculation.
 Q9_ANSWER = '0.252475'
-avg_ret = get_avg(EW_LS_pf_df, 2019)
 
 # Q10: What is the cumulative portfolio return of the total volatility long-short portfolio
 #      over the whole sample period?
