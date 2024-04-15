@@ -13,8 +13,7 @@
 #   - ......
 # Hint: you can utilize modules covered in our lectures, listed above and any others.
 # ----------------------------------------------------------------------------
-import config as cfg
-import util
+import numpy as np
 # ----------------------------------------------------------------------------
 # Part 2: import modules inside the project2 package
 # ----------------------------------------------------------------------------
@@ -22,7 +21,8 @@ import util
 # are imported as "cfg", and "util"
 #
 # <COMPLETE THIS PART>
-
+import config as cfg
+import util
 
 # We've imported other needed scripts and defined aliases. Please keep using the same aliases for them in this project.
 import zid_project2_etl as etl
@@ -363,29 +363,23 @@ This function will calculate the column average, number and t-stat for a certain
 
     Notes
     -----
-    The t-stat will be computed as follows:
-
-        mean/(sum((ls-mean)**2)/(n-1))**0.5
+    The t-stat will be computed using the numpy module
 
     """
-    data = df['ls'].dropna()
-    n_obs = len(data)
-    bar = data.mean()
-    diff = []
-    for ls in data:
-        diff.append((ls - bar)**2)
-        total_diff = sum(diff)
-        std = (total_diff/(n_obs-1))**0.5
-    t_stat = bar/std
+    ls = df['ls']
+    n_obs = ls.count()
+    bar = ls.mean()
+    t_stat = ls.mean()/(ls.std()/np.sqrt(ls.count()))
     ls_bar = format(bar,".4f")
     ls_t = format(t_stat, ".4f")
     df_t_stat = pd.DataFrame({'ls_bar': [ls_bar],'ls_t': [ls_t], 'n_obs': [n_obs]})
     return df_t_stat
-df_t_stat = t_stat(df_portfolio)
+df = pd.read_csv('EW_LS_pf_df.csv')
+df_t_stat = t_stat(df)
 print(df_t_stat)
-ls_bar ='0.0051'
-ls_t = '0.0638'
-n_obs = '235'
+ls_bar = df_t_stat['ls_bar']
+ls_t = df_t_stat['ls_t']
+n_obs = df_t_stat['ls_t']
 # ls_bar = '0.0073'
 # ls_t = '1.3847'
 # n_obs = '235'
