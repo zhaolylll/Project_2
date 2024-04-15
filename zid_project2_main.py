@@ -310,20 +310,20 @@ Q7_ANSWER = '5'
 # Q8: How many rows and columns in the EW_LS_pf_df data frame?
 #     Answer should be two integer, the first represent number of rows and the two numbers need to be
 #     separated by a comma.
-Q8_ANSWER = '62, 4'
+Q8_ANSWER = '235, 4'
 
 
 # Q9: What is the average equal weighted portfolio return of the quantile with the
 #     lowest total volatility for the year 2019?
 #     Use the output dataframe, EW_LS_pf_d, and auxiliary function in this script
 #     to do the calculation.
-Q9_ANSWER = '0.252475'
+Q9_ANSWER = '0.019546'
 
 # Q10: What is the cumulative portfolio return of the total volatility long-short portfolio
 #      over the whole sample period?
 #      Use the output dataframe, EW_LS_pf_d, and auxiliary function in this script
 #     to do the calculation.
-Q10_ANSWER = '0.561205'
+Q10_ANSWER = '1.597992'
 
 
 # ----------------------------------------------------------------------------
@@ -376,7 +376,7 @@ This function will calculate the column average, number and t-stat for a certain
     return df_t_stat
 df = pd.read_csv('EW_LS_pf_df.csv')
 df_t_stat = t_stat(df)
-print(df_t_stat)
+#print(df_t_stat)
 ls_bar = df_t_stat['ls_bar']
 ls_t = df_t_stat['ls_t']
 n_obs = df_t_stat['ls_t']
