@@ -106,14 +106,44 @@ def read_prc_csv(tic, start, end, prc_col='Adj Close'):
     tic = tic.lower()
     #check the `<tic>`_prc.csv exists in cfg.DATADIR
     tic_prc_file = os.path.join(cfg.DATADIR, f"{tic}_prc.csv")
-    df = pd.read_csv(tic_prc_file, parse_dates=['Date'], index_col='Date')
-    df.sort_index(inplace=True)
+    assert os.path.isfile(tic_prc_file), f"{tic}_prc.csv does not exist in data/."
 
-    prc = df[prc_col].loc[start:end]
+    #check start/end date
+    try:
+        # Attempt to convert the string to a Timestamp
+        start = pd.to_datetime(start, format='%Y-%m-%d')
+    except ValueError:
+        print(f"{start} is not a valid date.")
+        exit()
+    try:
+        # Attempt to convert the string to a Timestamp
+        end = pd.to_datetime(end, format='%Y-%m-%d')
+    except ValueError:
+        print(f"{end} is not a valid date.")
+        exit()
 
-    prc.name = tic
+    #read the dataframe and set Date column to be pd.Timestamp type and sort to be sure
+    tic_prc_df = pd.read_csv(tic_prc_file)
+    tic_prc_df['Date'] = pd.to_datetime(tic_prc_df['Date'])
+    tic_prc_df = tic_prc_df.sort_values(by='Date')
 
-    return prc
+    #get all the rows between start and end
+    filtered_df = tic_prc_df[(tic_prc_df['Date'] >= start) & (tic_prc_df['Date'] <= end)]
+    
+    # Set the 'Date' column as the index
+    filtered_df.set_index('Date', inplace=True)
+
+    #take the prc_col out
+    try:
+        result = filtered_df[prc_col]
+    except Exception:
+        print(f"{prc_col} does not exists in {tic_prc_file}.")
+        exit()
+
+    #assert the result series has no null value
+#    assert not result.isnull().any(), f"There is null value in the returned series"
+    
+    return result
 
 # ----------------------------------------------------------------------------
 # Part 4.3: Complete the daily_return_cal function
@@ -194,7 +224,7 @@ def daily_return_cal(prc):
         dtypes: float64(1)
          usage: 48.0 bytes
         ----------------------------------------
-
+        
     Hints
      -----
      - Ensure that the returns do not contain any entries with null values.
@@ -203,8 +233,8 @@ def daily_return_cal(prc):
     # <COMPLETE THIS PART>
     #shift the rows upward by 1 and fill NaN value at the last row
     prc_shifted = prc.shift(1)
-
-    #use original input - the shifted
+    
+    #use original input - the shifted 
     diff = prc/prc_shifted - 1
 
     #drop the rows with NaN value, diff[1:] will also do
@@ -317,13 +347,13 @@ def monthly_return_cal(prc):
     ####################### This part let us know which month we will exclude ############################################
     # Group by year and month, then filter groups with more than 18 entries
     filtered_prc = prc.groupby([prc.index.year, prc.index.month]).filter(lambda x: len(x) >= 18)
-
+    
     #get the months that should be printed out
-    filtered_prc_reassampled = filtered_prc.resample('M').last()
+    filtered_prc_reassampled = filtered_prc.resample('M').last() 
     months_with_more_than_18_entries = filtered_prc_reassampled.index #if only Sep is to be shown, out put will be one row with 2020-09-30 as index, use this to filter later
 
 
-
+    
 
     ####################### This part do monthly calculations for all months regarless if >= 18 entries presented for this month ############################################
     # Resample the series to monthly frequency, and take the last day's row
@@ -331,8 +361,8 @@ def monthly_return_cal(prc):
 
     #shift the rows upward by 1 and fill NaN value at the last row
     prc_reasampled_shifted = prc_reasampled.shift(1)
-
-    #use original input - the shifted
+    
+    #use original input - the shifted 
     diff = prc_reasampled/prc_reasampled_shifted - 1
 
     #drop the rows with NaN value, diff[1:] will also do
@@ -341,7 +371,7 @@ def monthly_return_cal(prc):
     ################################ filter based on index from the first part and convert the datetime index to a PeriodIndex (monthly frequency) ########################
     diff = diff[diff.index.isin(months_with_more_than_18_entries)]
     diff = diff.to_period(freq='M')
-
+    
     return diff
 
 
@@ -467,11 +497,11 @@ def aj_ret_dict(tickers, start, end):
         ################### Daily ######################################
         #get daily_df by converting series to frame
         daily_df = daily_return_cal(prc).to_frame()
-
+        
         #set names for index and that one column
         daily_df.index.name = 'Date'
         daily_df.columns = [tic.lower()]
-
+        
         #assign or merge to result['Daily']
         if result['Daily'] is None:
             result['Daily'] = daily_df
@@ -481,11 +511,11 @@ def aj_ret_dict(tickers, start, end):
         ################### Monthly ######################################
         #get monthly_df by converting series to frame
         monthly_df = monthly_return_cal(prc).to_frame()
-
+        
         #set names for index and that one column
         monthly_df.index.name = 'Year_Month'
         monthly_df.columns = [tic.lower()]
-
+        
         #assign or merge to result['Monthly']
         if result['Monthly'] is None:
             result['Monthly'] = monthly_df
@@ -570,18 +600,19 @@ def _test_aj_ret_dict(tickers, start, end):
 if __name__ == "__main__":
     pass
     # #test read_prc_csv function
-    # _test_read_prc_csv()
+    _test_read_prc_csv()
 
     # # use made-up series to test daily_return_cal function
-    #_test_daily_return_cal()
+    _test_daily_return_cal()
     # # use AAPL prc series to test daily_return_cal function
-    #ser_price = read_prc_csv(tic='AAPL', start='2020-09-03', end='2020-09-09')
-    #_test_daily_return_cal(made_up_data=False, ser_prc=ser_price)
+    ser_price = read_prc_csv(tic='AAPL', start='2020-09-03', end='2020-09-09')
+    _test_daily_return_cal(made_up_data=False, ser_prc=ser_price)
     #
     # # use made-up series to test daily_return_cal function
-    #_test_monthly_return_cal()
+    _test_monthly_return_cal()
     # # use AAPL prc series to test daily_return_cal function
-    #ser_price = read_prc_csv(tic='AAPL', start='2020-08-31', end='2021-01-10')
-    #_test_monthly_return_cal(made_up_data=False, ser_prc=ser_price)
+    ser_price = read_prc_csv(tic='AAPL', start='2020-08-31', end='2021-01-10')
+    _test_monthly_return_cal(made_up_data=False, ser_prc=ser_price)
     # # test aj_ret_dict function
-    #_test_aj_ret_dict(['AAPL', 'TSLA'], start='2010-06-25', end='2010-08-05')
+    _test_aj_ret_dict(['AAPL', 'TSLA'], start='2010-06-25', end='2010-08-05')
+

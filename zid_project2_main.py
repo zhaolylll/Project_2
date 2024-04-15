@@ -243,19 +243,41 @@ def get_cumulative_ret(df):
 #     Please name the three output files as DM_Ret_dict, Vol_Ret_mrg_df, EW_LS_pf_df.
 #     You can utilize the three output files and auxiliary functions to answer the questions.
 
+dict_ret, df_cha, df_portfolio = portfolio_main(cfg.TICKERS, "2000-12-29", "2021-08-31", "vol", ['Daily',], 3)
+with open('DM_Ret_dict', 'w') as file:
+    for key, value in dict_ret.items():
+        file.write(f'{key},{value}\n')
+    df_cha.to_csv('Vol_Ret_mrg_df.csv',index=True)
+    df_portfolio.to_csv('EW_LS_pf_df.csv', index=True)
+
+
+#df = dict_ret['Monthly']
+
+#Q1 = get_avg(df_cha, 2018)
+#print(Q1)
+#df_2010 = df_cha.loc['2010-01':'2010-12',['tsla','tsla_vol']]
+#print(df_2010)
+#df_2019 = df_portfolio['2019-01':'2019-12']
+#print(df_2019)
+#ret2019 = get_cumulative_ret(df_2019)
+#print(ret2019)
+#df_ls = get_cumulative_ret(df_portfolio)
+#print(df_ls)
+
+
 
 # Q1: Which stock in your sample has the lowest average daily return for the
 #     year 2008 (ignoring missing values)? Your answer should include the
 #     ticker for this stock.
 #     Use the output dictionary, DM_Ret_dict, and auxiliary function in this script
 #     to do the calculation.
-Q1_ANSWER = '?'
+Q1_ANSWER = 'nvda'
 
 
 # Q2: What is the daily average return of the stock in question 1 for the year 2008.
 #     Use the output dictionary, DM_Ret_dict, and auxiliary function in this script
 #     to do the calculation.
-Q2_ANSWER = '?'
+Q2_ANSWER = '-0.004241'
 
 
 # Q3: Which stock in your sample has the highest average monthly return for the
@@ -263,26 +285,26 @@ Q2_ANSWER = '?'
 #     ticker for this stock.
 #     Use the output dictionary, DM_Ret_dict, and auxiliary function in this script
 #     to do the calculation.
-Q3_ANSWER = '?'
+Q3_ANSWER = 'aapl'
 
 
 # Q4: What is the average monthly return of the stock in question 3 for the year 2019.
 #     Use the output dictionary, DM_Ret_dict, and auxiliary function in this script
 #     to do the calculation.
-Q4_ANSWER = '?'
+Q4_ANSWER = '0.056635'
 
 
 # Q5: What is the average monthly total volatility for stock 'TSLA' in the year 2010?
 #     Use the output dataframe, Vol_Ret_mrg_df, and auxiliary function in this script
 #     to do the calculation.
-Q5_ANSWER = '?'
+Q5_ANSWER = '0.041408'
 
 
 # Q6: What is the ratio of the average monthly total volatility for stock 'V'
 #     in the year 2008 to that in the year 2018? Keep 1 decimal places.
 #     Use the output dataframe, Vol_Ret_mrg_df, and auxiliary function in this script
 #     to do the calculation.
-Q6_ANSWER = '?'
+Q6_ANSWER = '2.6'
 
 
 # Q7: How many effective year-month for stock 'TSLA' in year 2010. An effective year-month
@@ -290,27 +312,27 @@ Q6_ANSWER = '?'
 #     are not null.
 #     Use the output dataframe, Vol_Ret_mrg_df, to do the calculation.
 #     Answer should be an integer
-Q7_ANSWER = '?'
+Q7_ANSWER = '5'
 
 
 # Q8: How many rows and columns in the EW_LS_pf_df data frame?
 #     Answer should be two integer, the first represent number of rows and the two numbers need to be
 #     separated by a comma.
-Q8_ANSWER = '?'
+Q8_ANSWER = '62, 4'
 
 
 # Q9: What is the average equal weighted portfolio return of the quantile with the
 #     lowest total volatility for the year 2019?
 #     Use the output dataframe, EW_LS_pf_d, and auxiliary function in this script
 #     to do the calculation.
-Q9_ANSWER = '?'
+Q9_ANSWER = '0.252475'
 
 
 # Q10: What is the cumulative portfolio return of the total volatility long-short portfolio
 #      over the whole sample period?
 #      Use the output dataframe, EW_LS_pf_d, and auxiliary function in this script
 #     to do the calculation.
-Q10_ANSWER = '?'
+Q10_ANSWER = '0.561205'
 
 
 # ----------------------------------------------------------------------------
@@ -332,7 +354,45 @@ Q10_ANSWER = '?'
 # Please replace the '?' of ls_bar, ls_t and n_obs variables below
 # with the respective values of the 'ls' column in EW_LS_pf_df from Part 8,
 # keep 4 decimal places if it is not an integer:
-ls_bar = '?'
+def t_stat(df):
+    """ Returns the mean, t-stat and the number of observations of a columns in an input DataFrame.
+
+This function will calculate the column average, number and t-stat for a certain columns
+    from a data frame `df`.
+
+    Parameters
+    ----------
+    df : DataFrame
+        A Pandas DataFrame containing long-short portfolio
+
+    Returns
+    -------
+    df_t_stat: DataFrame
+        A Pandas DataFrame containing mean, t-stat, and the number of observations of long-short portfolio
+
+    Notes
+    -----
+    The t-stat will be computed as follows:
+
+        mean/(mean/(n-1)**0.5)
+
+    """
+    data = df['ls'].dropna()
+    n_obs = len(data)
+    bar = data.mean()
+    diff = []
+    for ls in data:
+        diff.append((ls - bar)**2)
+        total_diff = sum(diff)
+        std = (total_diff/(n_obs-1)**0.5)
+    t_stat = bar/std
+    ls_bar = format(bar,".4f")
+    ls_t = format(t_stat, ".4f")
+    df_t_stat = pd.DataFrame({'ls_bar': [ls_bar],'ls_t': [ls_t], 'n_obs': [n_obs]})
+    return df_t_stat
+df_t_stat = t_stat(df_portfolio)
+print(df_t_stat)
+ls_bar ='?'
 ls_t = '?'
 n_obs = '?'
 # ls_bar = '0.0073'
@@ -340,7 +400,7 @@ n_obs = '?'
 # n_obs = '235'
 
 
-# <ADD THE t_stat FUNCTION HERE>
+
 
 
 # ----------------------------------------------------------------------------
@@ -448,7 +508,7 @@ def _test_get_cumulative_ret():
         f"The value of `res` is {res}",
     ]
     util.test_print('\n'.join(to_print))
-# _test_get_cumulative_ret()
+#_test_get_cumulative_ret()
 
 if __name__ == "__main__":
     pass

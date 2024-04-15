@@ -9,7 +9,7 @@ import os
 import toolkit_config as tcfg
 
 
-ROOTDIR = os.path.join(tcfg.PRJDIR, 'project2')
+ROOTDIR = os.path.join(tcfg.PRJDIR,'project2')
 DATADIR = os.path.join(ROOTDIR, 'data')
 # FF_CSV = os.path.join(DATADIR, 'ff_daily.csv')
 
