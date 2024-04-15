@@ -374,7 +374,7 @@ This function will calculate the column average, number and t-stat for a certain
     -----
     The t-stat will be computed as follows:
 
-        mean/(mean/(n-1)**0.5)
+        mean/(sum((ls-mean)**2)/(n-1))**0.5
 
     """
     data = df['ls'].dropna()
@@ -384,7 +384,7 @@ This function will calculate the column average, number and t-stat for a certain
     for ls in data:
         diff.append((ls - bar)**2)
         total_diff = sum(diff)
-        std = (total_diff/(n_obs-1)**0.5)
+        std = (total_diff/(n_obs-1))**0.5
     t_stat = bar/std
     ls_bar = format(bar,".4f")
     ls_t = format(t_stat, ".4f")
@@ -392,9 +392,9 @@ This function will calculate the column average, number and t-stat for a certain
     return df_t_stat
 df_t_stat = t_stat(df_portfolio)
 print(df_t_stat)
-ls_bar ='?'
-ls_t = '?'
-n_obs = '?'
+ls_bar ='0.0051'
+ls_t = '0.0638'
+n_obs = '235'
 # ls_bar = '0.0073'
 # ls_t = '1.3847'
 # n_obs = '235'
