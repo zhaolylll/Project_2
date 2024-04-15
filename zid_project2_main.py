@@ -15,7 +15,6 @@
 # ----------------------------------------------------------------------------
 import config as cfg
 import util
-
 # ----------------------------------------------------------------------------
 # Part 2: import modules inside the project2 package
 # ----------------------------------------------------------------------------
@@ -29,10 +28,7 @@ import util
 import zid_project2_etl as etl
 import zid_project2_characteristics as cha
 import zid_project2_portfolio as pf
-
 import pandas as pd
-
-
 # -----------------------------------------------------------------------------------------------
 # Part 3: Follow the workflow in portfolio_main function
 #         to understand how this project construct total volatility long-short portfolio
@@ -168,9 +164,9 @@ def get_avg(df: pd.DataFrame, year):
         dtype: float64
 
     """
-    avg_values = df.loc[df.index.year == year].mean()
+    avg_values = df[df.index.year == year]
 
-    return avg_values
+    return avg_values.mean(skipna=True)
 
 
 def get_cumulative_ret(df):
@@ -198,10 +194,9 @@ def get_cumulative_ret(df):
         where r1, ..., rN represents monthly returns
 
     """
-    cum_ret = (1 + df).prod() - 1
-    cum_ret_df = pd.DataFrame(cum_ret, columns=['Cum_Return'])
+    cum_ret = (1 + df.fillna(0)).prod() - 1
 
-    return cum_ret_df
+    return cum_ret
 
 
 # ----------------------------------------------------------------------------
@@ -243,26 +238,23 @@ def get_cumulative_ret(df):
 #     Please name the three output files as DM_Ret_dict, Vol_Ret_mrg_df, EW_LS_pf_df.
 #     You can utilize the three output files and auxiliary functions to answer the questions.
 
-dict_ret, df_cha, df_portfolio = portfolio_main(cfg.TICKERS, "2000-12-29", "2021-08-31", "vol", ['Daily',], 3)
-with open('DM_Ret_dict', 'w') as file:
-    for key, value in dict_ret.items():
-        file.write(f'{key},{value}\n')
-    df_cha.to_csv('Vol_Ret_mrg_df.csv',index=True)
-    df_portfolio.to_csv('EW_LS_pf_df.csv', index=True)
+# tickers: cfg.TICKERS
+# start: '2000-12-29'
+# end: '2021-08-31'
+# cha_name: 'vol'
+# ret_freq_use: ['Daily',]
+# q: 3
+#
+#
+#
+# dict_ret, df_cha, df_portfolio = portfolio_main(cfg.TICKERS, "2000-12-29", "2021-08-31", "vol", ['Daily',], 3)
+#
+# dict_ret['Daily'].to_csv('DM_Ret_dict_Daily.csv')
+# dict_ret['Monthly'].to_csv('DM_Ret_dict_Monthly.csv')
 
+# df_cha.to_csv('Vol_Ret_mrg_df.csv')
+# df_portfolio.to_csv('EW_LS_pf_df.csv')
 
-#df = dict_ret['Monthly']
-
-#Q1 = get_avg(df_cha, 2018)
-#print(Q1)
-#df_2010 = df_cha.loc['2010-01':'2010-12',['tsla','tsla_vol']]
-#print(df_2010)
-#df_2019 = df_portfolio['2019-01':'2019-12']
-#print(df_2019)
-#ret2019 = get_cumulative_ret(df_2019)
-#print(ret2019)
-#df_ls = get_cumulative_ret(df_portfolio)
-#print(df_ls)
 
 
 
@@ -326,7 +318,7 @@ Q8_ANSWER = '62, 4'
 #     Use the output dataframe, EW_LS_pf_d, and auxiliary function in this script
 #     to do the calculation.
 Q9_ANSWER = '0.252475'
-
+avg_ret = get_avg(EW_LS_pf_df, 2019)
 
 # Q10: What is the cumulative portfolio return of the total volatility long-short portfolio
 #      over the whole sample period?
@@ -473,7 +465,7 @@ def _test_get_avg():
         f"The value of `res` is {res}",
     ]
     util.test_print('\n'.join(to_print))
-# _test_get_avg()
+ #_test_get_avg()
 
 
 def _test_get_cumulative_ret():
@@ -512,7 +504,6 @@ def _test_get_cumulative_ret():
 
 if __name__ == "__main__":
     pass
-
 
 
 
