@@ -10,14 +10,14 @@
 #       For details, review the import statements in zid_project2_main.py
 
 # <COMPLETE THIS PART>
-import zid_project2_etl as etl
+import sys
 
-import config as cfg
 import util
 import pandas as pd
 import numpy as np
-import sys
-import os
+import zid_project2_etl as etl
+
+FLOOR_RET_COUNT = 18
 
 
 # ----------------------------------------------------------------------------------------
@@ -156,26 +156,29 @@ def vol_cal(ret, cha_name, ret_freq_use: list):
 
     # <COMPLETE THIS PART>
 
-def vol_cal(ret, cha_name, ret_freq_use: list):
-    if cha_name != 'vol' or 'Daily' not in ret_freq_use:
-        raise ValueError("Invalid characteristic name or frequency use list.")
+ if 'Daily' in ret_freq_use:
+        df = ret['Daily'].copy()
+    else:
+        raise ValueError("Invalid frequency specified in ret_freq_use.")
 
-    # Calculate the monthly total volatility for each stock
-    # Note: The daily returns DataFrame is used for this calculation
-    df_daily_returns = ret['Daily'].copy()
-    df_volatility = df_daily_returns.groupby(df_daily_returns.index.to_period('M')).apply(lambda x: x.std(ddof=0))
+    # count data in a single month
+    month_ret_count = df.resample('M').count()
+    month_ret_count.index = month_ret_count.index.to_period('M')
+    month_ret_count = month_ret_count[month_ret_count > FLOOR_RET_COUNT]
 
-    # Set the index name and column names
-    df_volatility.index.name = 'Year_Month'
-    df_volatility.columns = [f"{col}_{cha_name}" for col in df_volatility.columns]
+    # Convert daily returns to monthly, calculating volatility
+    monthly_vol = df.resample('M').std()
 
-    # Drop months with less than 18 trading days
-    df_volatility = df_volatility[df_daily_returns.groupby(df_daily_returns.index.to_period('M')).count() >= 18]
+    # Ensure the monthly_vol index is PeriodIndex with the correct frequency
+    monthly_vol.index = monthly_vol.index.to_period('M')
 
-    # Drop rows with all NaN values
-    df_volatility.dropna(how='all', inplace=True)
+    # check whether pass floor count
+    month_ret_count[month_ret_count.notnull()] = monthly_vol
 
-    return df_volatility
+    # Rename columns to include the characteristic name
+    month_ret_count.columns = [f"{col}_{cha_name}" for col in month_ret_count.columns]
+
+    return month_ret_count
 
 
 # ----------------------------------------------------------------------------
@@ -249,18 +252,23 @@ def merge_tables(ret, df_cha, cha_name):
      - Read shift() documentations to understand how to shift the values of a DataFrame along a specified axis
     """
     # <COMPLETE THIS PART>
-   def merge_tables(ret, df_cha, cha_name):
-    # Get the monthly returns DataFrame
-    df_monthly_returns = ret['Monthly'].copy()
+    # setting time index
+    # df_cha = df_cha.reset_index()
+    # df_cha['Date'] = df_cha['Date'] + 1
+    # df_cha = df_cha.set_index(keys='Date')
+    # calculating monthly return
+    monthly_returns = ret['Monthly'].copy()
 
-    # Merge the monthly returns with the characteristics DataFrame
-    df_merged = pd.merge(df_monthly_returns, df_cha.shift(1), left_index=True, right_index=True, how='left')
+    # Shift the characteristic DataFrame 1 month forward
+    df_cha_shifted = df_cha.shift(1)
 
-    # Drop rows with all NaN values
-    df_merged.dropna(how='all', inplace=True)
+    # Merge the two DataFrames
+    merged_df = pd.merge(monthly_returns, df_cha_shifted, left_index=True, right_index=True, how='left')
 
-    return df_merged
+    # Ensure index name is correct
+    merged_df.index.name = 'Year_Month'
 
+    return merged_df
 # ------------------------------------------------------------------------------------
 # Part 5.2: Read the cha_main function and understand the workflow in this script
 # ------------------------------------------------------------------------------------
@@ -309,17 +317,16 @@ def cha_main(ret, cha_name, ret_freq_use: list):
         in the module with appropriate logic to handle the inputs and outputs as described.
     """
     # <COMPLETE THIS PART>
-  def cha_main(ret, cha_name, ret_freq_use: list):
-    # Step 1: Sanity check
+  # Step 1: Sanity check on inputs
     vol_input_sanity_check(ret, cha_name, ret_freq_use)
 
-    # Step 2: Calculate characteristics
+    # Step 2: Calculate stock characteristics (volatility in this case)
     df_cha = vol_cal(ret, cha_name, ret_freq_use)
 
-    # Step 3: Merge tables
-    df_merged = merge_tables(ret, df_cha, cha_name)
+    # Step 3: Merge the calculated characteristics with monthly returns
+    merged_df = merge_tables(ret, df_cha, cha_name)
 
-    return df_merged
+    return merged_df
 
 
 def _test_ret_dict_gen():
