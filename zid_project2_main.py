@@ -466,7 +466,7 @@ f8a7e37	z5508569LiyiZhao	Mon Apr 8 10:43:22 2024 +1000	Initial commit, no code h
 # Please use Zoom to record it. The final submission should be a zoom recording link.
 
 # Please replace the '?' with your team's presentation video zoom link:
-Presentation_zoom_link = '?'
+Presentation_zoom_link = 'https://youtu.be/dXGrLgKv4xo'
 Password_of_your_video = '?'
 
 
